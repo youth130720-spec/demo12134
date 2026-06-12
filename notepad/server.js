@@ -15,9 +15,48 @@ const MIME = {
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 
+async function handleHealth(res) {
+  const url   = process.env.TURSO_URL;
+  const token = process.env.TURSO_AUTH_TOKEN;
+
+  const missing = [!url && 'TURSO_URL', !token && 'TURSO_AUTH_TOKEN'].filter(Boolean);
+  if (missing.length) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      ok: false,
+      code: 'ENV_MISSING',
+      error: `환경변수 누락: ${missing.join(', ')}`,
+      detail: { TURSO_URL: !!url, TURSO_AUTH_TOKEN: !!token },
+    }));
+    return;
+  }
+
+  try {
+    const { createClient } = require('@libsql/client');
+    const client = createClient({ url, authToken: token });
+    await client.execute('SELECT 1');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      ok: false,
+      code: 'DB_CONNECTION_FAILED',
+      error: err.message,
+      detail: { url: url.replace(/\/\/.*?@/, '//***@') },
+    }));
+  }
+}
+
 http.createServer((req, res) => {
-  const urlPath = req.url === '/' ? '/index.html' : req.url.split('?')[0];
-  const filePath = path.join(ROOT, urlPath);
+  const urlPath = req.url.split('?')[0];
+
+  if (urlPath === '/api/health') {
+    handleHealth(res);
+    return;
+  }
+
+  const filePath = path.join(ROOT, urlPath === '/' ? '/index.html' : urlPath);
 
   fs.readFile(filePath, (err, data) => {
     if (err) {

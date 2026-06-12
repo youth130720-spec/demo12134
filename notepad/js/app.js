@@ -1,3 +1,29 @@
+/* ── DB 연결 체크 ── */
+async function checkDbHealth() {
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    if (!data.ok) {
+      const lines = [
+        '⚠️  Turso DB 연결 실패',
+        '',
+        `[코드] ${data.code || 'UNKNOWN'}`,
+        `[오류] ${data.error}`,
+      ];
+      if (data.detail) {
+        lines.push('');
+        lines.push('[상세]');
+        Object.entries(data.detail).forEach(([k, v]) => lines.push(`  ${k}: ${v}`));
+      }
+      lines.push('');
+      lines.push('Render 대시보드 → Environment 에서 환경변수를 확인하세요.');
+      alert(lines.join('\n'));
+    }
+  } catch (err) {
+    alert(`⚠️  서버 응답 없음\n\n[오류] ${err.message}\n\n서버가 정상 실행 중인지 확인하세요.`);
+  }
+}
+
 /* ── 상수 & 유틸 ── */
 const STORAGE_KEY = 'notepad_v1';
 const COLORS = ['#4CAF50','#2196F3','#FF9800','#E91E63','#9C27B0','#00BCD4','#FF5722','#607D8B'];
@@ -369,6 +395,7 @@ function closeModal() {
 
 /* ── 이벤트 바인딩 ── */
 document.addEventListener('DOMContentLoaded', () => {
+  checkDbHealth();
   load();
 
   // 기본 노트북 생성
