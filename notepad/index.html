@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>메모장</title>
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 왼쪽 사이드바 -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+            <rect width="32" height="32" rx="6" fill="#00A82D"/>
+            <path d="M8 10h16M8 16h10M8 22h12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span>메모장</span>
+        </div>
+      </div>
+
+      <button class="btn-new-note" id="btnNewNote">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        새 노트
+      </button>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <li class="nav-item active" data-filter="all" id="navAll">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            </svg>
+            모든 노트
+            <span class="nav-count" id="countAll">0</span>
+          </li>
+          <li class="nav-item" data-filter="starred" id="navStarred">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            즐겨찾기
+            <span class="nav-count" id="countStarred">0</span>
+          </li>
+          <li class="nav-item" data-filter="trash" id="navTrash">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+            휴지통
+            <span class="nav-count" id="countTrash">0</span>
+          </li>
+        </ul>
+
+        <div class="nav-section">
+          <div class="nav-section-header" id="toggleNotebooks">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            노트북
+            <button class="btn-add-section" id="btnAddNotebook" title="노트북 추가">+</button>
+          </div>
+          <ul id="notebookList" class="section-list"></ul>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header" id="toggleTags">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            태그
+          </div>
+          <ul id="tagList" class="section-list"></ul>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- 가운데 노트 목록 -->
+    <section class="notes-panel">
+      <div class="notes-panel-header">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="searchInput" placeholder="노트 검색..." />
+        </div>
+        <div class="notes-panel-title" id="panelTitle">모든 노트</div>
+        <div class="sort-bar">
+          <select id="sortSelect">
+            <option value="updated">최근 수정순</option>
+            <option value="created">최근 생성순</option>
+            <option value="title">제목순</option>
+          </select>
+        </div>
+      </div>
+      <ul class="notes-list" id="notesList"></ul>
+      <div class="notes-empty" id="notesEmpty">
+        <svg viewBox="0 0 64 64" width="48" height="48" fill="none" stroke="#ccc" stroke-width="2">
+          <rect x="8" y="8" width="48" height="48" rx="4"/>
+          <line x1="18" y1="24" x2="46" y2="24"/>
+          <line x1="18" y1="32" x2="38" y2="32"/>
+          <line x1="18" y1="40" x2="42" y2="40"/>
+        </svg>
+        <p>노트가 없습니다</p>
+        <button class="btn-empty-create" id="btnEmptyCreate">새 노트 만들기</button>
+      </div>
+    </section>
+
+    <!-- 오른쪽 에디터 -->
+    <main class="editor-panel" id="editorPanel">
+      <div class="editor-placeholder" id="editorPlaceholder">
+        <svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="#ddd" stroke-width="1.5">
+          <path d="M12 8h28l12 12v36H12V8z"/>
+          <polyline points="40 8 40 20 52 20"/>
+          <line x1="20" y1="32" x2="44" y2="32"/>
+          <line x1="20" y1="40" x2="38" y2="40"/>
+        </svg>
+        <p>노트를 선택하거나 새 노트를 만드세요</p>
+      </div>
+
+      <div class="editor-content" id="editorContent" style="display:none">
+        <div class="editor-toolbar">
+          <div class="toolbar-left">
+            <button class="tool-btn" data-cmd="bold" title="굵게 (Ctrl+B)"><b>B</b></button>
+            <button class="tool-btn" data-cmd="italic" title="기울임 (Ctrl+I)"><i>I</i></button>
+            <button class="tool-btn" data-cmd="underline" title="밑줄 (Ctrl+U)"><u>U</u></button>
+            <div class="toolbar-divider"></div>
+            <button class="tool-btn" data-cmd="insertUnorderedList" title="글머리 기호">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <circle cx="2" cy="4" r="1.5"/><rect x="5" y="3" width="10" height="2" rx="1"/>
+                <circle cx="2" cy="8" r="1.5"/><rect x="5" y="7" width="10" height="2" rx="1"/>
+                <circle cx="2" cy="12" r="1.5"/><rect x="5" y="11" width="10" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button class="tool-btn" data-cmd="insertOrderedList" title="번호 목록">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+                <text x="0" y="5" font-size="5">1.</text>
+                <rect x="5" y="3" width="10" height="2" rx="1"/>
+                <text x="0" y="10" font-size="5">2.</text>
+                <rect x="5" y="8" width="10" height="2" rx="1"/>
+                <text x="0" y="15" font-size="5">3.</text>
+                <rect x="5" y="13" width="10" height="2" rx="1"/>
+              </svg>
+            </button>
+            <div class="toolbar-divider"></div>
+            <select class="tool-select" id="headingSelect" title="제목 스타일">
+              <option value="div">본문</option>
+              <option value="h1">제목 1</option>
+              <option value="h2">제목 2</option>
+              <option value="h3">제목 3</option>
+            </select>
+            <div class="toolbar-divider"></div>
+            <input type="color" class="tool-color" id="fontColor" title="글자 색상" value="#333333"/>
+            <button class="tool-btn" data-cmd="removeFormat" title="서식 지우기">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 3l10 10M13 3l-10 10"/>
+              </svg>
+            </button>
+          </div>
+          <div class="toolbar-right">
+            <button class="tool-btn star-btn" id="btnStar" title="즐겨찾기">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+            <button class="tool-btn delete-btn" id="btnDelete" title="노트 삭제">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="editor-meta">
+          <input type="text" class="note-title-input" id="noteTitleInput" placeholder="제목 없음" />
+          <div class="note-info">
+            <span id="noteDate"></span>
+            <div class="note-tags-container">
+              <div class="note-tags" id="noteTags"></div>
+              <input type="text" class="tag-input" id="tagInput" placeholder="태그 추가..." />
+            </div>
+          </div>
+          <div class="notebook-selector-row">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#999" stroke-width="2">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+            <select class="notebook-select" id="notebookSelect"></select>
+          </div>
+        </div>
+
+        <div class="editor-body">
+          <div class="note-editor" id="noteEditor" contenteditable="true" spellcheck="false"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 모달: 노트북 추가 -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">새 노트북</h3>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="modal-input" id="modalInput" placeholder="노트북 이름을 입력하세요" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="btnModalCancel">취소</button>
+        <button class="btn-confirm" id="btnModalConfirm">만들기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 컨텍스트 메뉴 -->
+  <div class="context-menu" id="contextMenu">
+    <ul>
+      <li id="ctxRename">이름 변경</li>
+      <li id="ctxDelete" class="danger">삭제</li>
+    </ul>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
