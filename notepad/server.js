@@ -12,7 +12,7 @@ const MIME = {
   '.ico':  'image/x-icon',
 };
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 
 http.createServer((req, res) => {
@@ -29,7 +29,7 @@ http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': MIME[ext] || 'text/plain' });
     res.end(data);
   });
-}).listen(PORT, () => {
+}).listen(PORT, '0.0.0.0', () => {
   console.log(`\n  메모장 서버 실행 중`);
   console.log(`  http://localhost:${PORT}\n`);
 });

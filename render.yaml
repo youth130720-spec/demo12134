@@ -2,9 +2,10 @@ services:
   - type: web
     name: notepad
     env: node
+    plan: free
     rootDir: notepad
-    buildCommand: ""
-    startCommand: node server.js
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
     pullRequestPreviewsEnabled: false
     envVars:
       - key: TURSO_URL
